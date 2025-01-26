@@ -1,18 +1,18 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import { database } from '@/lib/appwrite';
-import { getCurrentUser } from '@/lib/appwrite';
-import { APPWRITE_DATABASE_ID, collections } from '@/lib/config';
-import { fetchMovieDetails } from '@/lib/tmdb';
-import { Movie } from '@/lib/types';
-import { MovieGrid } from '@/components/movies/movie-grid';
-import { CreateListDialog } from '@/components/lists/create-list-dialog';
-import { ListSelector } from '@/components/lists/list-selector';
-import { Button } from '@/components/ui/button';
-import { Plus, Loader2, List } from 'lucide-react';
-import { Query } from 'appwrite';
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { database } from "@/lib/appwrite";
+import { getCurrentUser } from "@/lib/appwrite";
+import { APPWRITE_DATABASE_ID, collections } from "@/lib/config";
+import { fetchMovieDetails } from "@/lib/tmdb";
+import { Movie } from "@/lib/types";
+import { MovieGrid } from "@/components/movies/movie-grid";
+import { CreateListDialog } from "@/components/lists/create-list-dialog";
+import { ListSelector } from "@/components/lists/list-selector";
+import { Button } from "@/components/ui/button";
+import { Plus, Loader2, List } from "lucide-react";
+import { Query } from "appwrite";
 
 interface MovieList {
   $id: string;
@@ -38,26 +38,23 @@ export default function ListsPage() {
     try {
       const currentUser = await getCurrentUser();
       if (!currentUser) {
-        router.push('/auth');
+        router.push("/auth");
         return;
       }
 
       const response = await database.listDocuments(
         APPWRITE_DATABASE_ID!,
         collections.lists,
-        [
-          Query.equal('userId', currentUser.$id),
-          Query.orderDesc('createdAt'),
-        ]
+        [Query.equal("userId", currentUser.$id), Query.orderDesc("createdAt")]
       );
 
-      setLists(response.documents);
+      setLists(response.documents as unknown as MovieList[]);
       if (response.documents.length > 0) {
-        setSelectedList(response.documents[0]);
+        setSelectedList(response.documents[0] as unknown as MovieList);
         await loadListMovies(response.documents[0].$id);
       }
     } catch (error) {
-      console.error('Error loading lists:', error);
+      console.error("Error loading lists:", error);
     } finally {
       setIsLoading(false);
     }
@@ -69,7 +66,7 @@ export default function ListsPage() {
       const response = await database.listDocuments(
         APPWRITE_DATABASE_ID!,
         collections.listItems,
-        [Query.equal('listId', listId)]
+        [Query.equal("listId", listId)]
       );
 
       const movieDetails = await Promise.all(
@@ -78,7 +75,7 @@ export default function ListsPage() {
 
       setMovies(movieDetails);
     } catch (error) {
-      console.error('Error loading list movies:', error);
+      console.error("Error loading list movies:", error);
     } finally {
       setIsLoading(false);
     }
@@ -97,7 +94,7 @@ export default function ListsPage() {
       const newList = await database.createDocument(
         APPWRITE_DATABASE_ID!,
         collections.lists,
-        'unique()',
+        "unique()",
         {
           name,
           description,
@@ -106,12 +103,12 @@ export default function ListsPage() {
         }
       );
 
-      setLists([newList, ...lists]);
-      setSelectedList(newList);
+      setLists([newList as unknown as MovieList, ...lists]);
+      setSelectedList(newList as unknown as MovieList);
       setMovies([]);
       setIsDialogOpen(false);
     } catch (error) {
-      console.error('Error creating list:', error);
+      console.error("Error creating list:", error);
     }
   };
 
@@ -123,8 +120,8 @@ export default function ListsPage() {
         APPWRITE_DATABASE_ID!,
         collections.listItems,
         [
-          Query.equal('listId', selectedList.$id),
-          Query.equal('movieId', movieId)
+          Query.equal("listId", selectedList.$id),
+          Query.equal("movieId", movieId),
         ]
       );
 
@@ -134,10 +131,10 @@ export default function ListsPage() {
           collections.listItems,
           response.documents[0].$id
         );
-        setMovies(movies.filter(movie => movie.id !== movieId));
+        setMovies(movies.filter((movie) => movie.id !== movieId));
       }
     } catch (error) {
-      console.error('Error removing movie from list:', error);
+      console.error("Error removing movie from list:", error);
     }
   };
 
@@ -169,14 +166,16 @@ export default function ListsPage() {
             selectedList={selectedList}
             onSelect={handleListSelect}
           />
-          
+
           {selectedList && (
             <div className="space-y-4">
               <div>
                 <h2 className="text-2xl font-semibold">{selectedList.name}</h2>
-                <p className="text-muted-foreground">{selectedList.description}</p>
+                <p className="text-muted-foreground">
+                  {selectedList.description}
+                </p>
               </div>
-              
+
               {isLoading ? (
                 <div className="flex justify-center py-8">
                   <Loader2 className="h-8 w-8 animate-spin" />
@@ -198,7 +197,8 @@ export default function ListsPage() {
       ) : (
         <div className="text-center py-12">
           <p className="text-muted-foreground">
-            You haven't created any lists yet. Create your first list to start organizing your movies!
+            You haven't created any lists yet. Create your first list to start
+            organizing your movies!
           </p>
         </div>
       )}

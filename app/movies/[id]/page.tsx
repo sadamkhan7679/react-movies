@@ -15,6 +15,16 @@ import { Loading } from "@/components/ui/loading";
 import { useEffect, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 
+// export const generateStaticParams = async () => {
+//   return [
+//     {
+//       params: {
+//         id: "1",
+//       },
+//     },
+//   ];
+// };
+
 export default function MoviePage() {
   // Get Params from pathname
   const searchParams = useSearchParams();
